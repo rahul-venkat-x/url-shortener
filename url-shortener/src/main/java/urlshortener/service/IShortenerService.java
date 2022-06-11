@@ -3,8 +3,6 @@ package urlshortener.service;
 import urlshortener.model.Url;
 import urlshortener.model.UrlRequestDto;
 
-import java.util.Date;
-
 public interface IShortenerService {
 
      Url getShortUrl(UrlRequestDto url);
@@ -13,8 +11,8 @@ public interface IShortenerService {
 
      void updateOriginalUrl(String shortUrl, String originalUrl);
 
-     String encodeUrl(String originalUrl, Date creationTime);
+     String encodeUrl(String originalUrl, String creationTime);
 
-     String getOriginalUrl(String shortUrl);
+     String fetchOriginalUrl(String shortUrl);
 
 }

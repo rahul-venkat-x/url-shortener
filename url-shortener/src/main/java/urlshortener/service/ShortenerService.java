@@ -2,31 +2,39 @@ package urlshortener.service;
 
 import com.google.common.hash.Hashing;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.stereotype.Component;
 import urlshortener.exceptions.ShortenerExceptions;
 import urlshortener.model.Url;
 import urlshortener.model.UrlRequestDto;
 import urlshortener.urlRepository.IUrlRepository;
 
 import java.nio.charset.StandardCharsets;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
+@Component
 public class ShortenerService implements IShortenerService {
 
-    @Autowired
     private IUrlRepository urlRepository;
 
-    @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
 
-    @Autowired
     private MongoTemplate mongoTemplate;
+
+    public ShortenerService(IUrlRepository urlRepository,
+                            SequenceGeneratorService sequenceGeneratorService,
+                            MongoTemplate mongoTemplate){
+        this.urlRepository = urlRepository;
+        this.sequenceGeneratorService = sequenceGeneratorService;
+        this.mongoTemplate = mongoTemplate;
+    }
 
     @Override
     public Url getShortUrl(UrlRequestDto urlRequestDto) {
@@ -36,11 +44,9 @@ public class ShortenerService implements IShortenerService {
             throw new ShortenerExceptions("Given Url is not valid..Please try another URL");
 
         Url url = new Url();
-        url.setId(sequenceGeneratorService.generateSequence(Url.urlSequence));
         url.setOriginalUrl(urlRequestDto.getOriginalUrl());
 
         LocalDateTime timeNow = LocalDateTime.now();
-        Instant createAt = timeNow.toInstant(ZoneOffset.UTC);
         Instant expireAt = timeNow.plusMinutes(5).toInstant(ZoneOffset.UTC);
         url.setCreationDate(Date.from(Instant.now()));
         url.setExpirationDate(Date.from(expireAt));
@@ -51,9 +57,10 @@ public class ShortenerService implements IShortenerService {
             url.setShortUrl(urlRequestDto.getShortUrl());
         }
         else {
-            String encodedUrl = encodeUrl(url.getOriginalUrl(),url.getCreationDate());
+            String encodedUrl = encodeUrl(url.getOriginalUrl(),timeNow.toString());
             url.setShortUrl(encodedUrl);
         }
+        url.setId(sequenceGeneratorService.generateSequence(Url.urlSequence));
         saveShortUrl(url);
         return url;
     }
@@ -73,14 +80,14 @@ public class ShortenerService implements IShortenerService {
     }
 
     @Override
-    public String encodeUrl(String originalUrl, Date creationTime) {
+    public String encodeUrl(String originalUrl, String creationTime) {
         return Hashing.crc32()
-                .hashString(originalUrl.concat(creationTime.toString()), StandardCharsets.UTF_8)
+                .hashString(originalUrl.concat(creationTime), StandardCharsets.UTF_8)
                 .toString();
     }
 
     @Override
-    public String getOriginalUrl(String shortUrl) {
+    public String fetchOriginalUrl(String shortUrl) {
         if(!urlRepository.existsByShortUrl(shortUrl))
             throw new ShortenerExceptions("Given short url not available in database or maybe expired");
         Url url = urlRepository.findByShortUrl(shortUrl);

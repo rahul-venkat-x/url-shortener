@@ -3,7 +3,12 @@ package urlshortener.controller;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import urlshortener.model.Url;
 import urlshortener.model.UrlRequestDto;
 import urlshortener.model.UrlResponseDto;
@@ -22,7 +27,7 @@ public class ShortenerController extends BaseController {
     }
 
     @PostMapping(value = "/getShortUrl")
-    public ResponseEntity<?> getShortUrl(@RequestBody UrlRequestDto urlRequestDto){
+    public ResponseEntity<UrlResponseDto> getShortUrl(@RequestBody UrlRequestDto urlRequestDto){
         Url url = shortenerService.getShortUrl(urlRequestDto);
         ModelMapper modelMapper = new ModelMapper();
         UrlResponseDto urlResponse = modelMapper.map(url, UrlResponseDto.class);
@@ -30,10 +35,10 @@ public class ShortenerController extends BaseController {
     }
 
     @GetMapping(value = "/{shortUrl}")
-    public ResponseEntity<?> getOriginalUrl(@PathVariable("shortUrl") String shortUrl, HttpServletResponse response) throws IOException {
-       String originalUrl = shortenerService.getOriginalUrl(shortUrl);
+    public ResponseEntity<HttpStatus> getOriginalUrl(@PathVariable("shortUrl") String shortUrl, HttpServletResponse response) throws IOException {
+       String originalUrl = shortenerService.fetchOriginalUrl(shortUrl);
        response.sendRedirect(originalUrl);
-       return null;
+       return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PutMapping(value = "/update")
