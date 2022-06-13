@@ -10,7 +10,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 public class RootConfig {
 
     @Bean
-    public RestTemplate getTestRestTemplate(){
+    public RestTemplate getRestTemplate(){
         HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
                      HttpClientBuilder.create().build());
         return new RestTemplate(clientHttpRequestFactory);
