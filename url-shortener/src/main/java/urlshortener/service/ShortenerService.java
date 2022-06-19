@@ -75,6 +75,10 @@ public class ShortenerService implements IShortenerService {
         if(!urlRepository.existsByShortUrl(shortUrl))
            throw new ShortenerExceptions("Given short url not available in database or maybe expired");
 
+        UrlValidator urlValidator = new UrlValidator();
+        if(!urlValidator.isValid(originalUrl))
+            throw new ShortenerExceptions("Given Url is not valid..Please try another URL");
+
         mongoTemplate.updateFirst(new Query(where("shortUrl").is(shortUrl)),
                 Update.update("originalUrl",originalUrl),Url.class);
     }

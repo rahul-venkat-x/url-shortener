@@ -6,6 +6,7 @@ import urlshortener.model.Url;
 
 @Repository
 public interface IUrlRepository extends MongoRepository<Url,Long> {
+
     Url findByShortUrl(String shortUrl);
 
     Boolean existsByShortUrl(String shortUrl);

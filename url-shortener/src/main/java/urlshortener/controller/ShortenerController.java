@@ -3,7 +3,6 @@ package urlshortener.controller;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +30,7 @@ public class ShortenerController {
 
     @PostMapping(value = "/getShortUrl")
     public ResponseEntity<UrlResponseDto> getShortUrl(@RequestBody @Valid UrlRequestDto urlRequestDto){
+
         Url url = shortenerService.getShortUrl(urlRequestDto);
         ModelMapper modelMapper = new ModelMapper();
         UrlResponseDto urlResponse = modelMapper.map(url, UrlResponseDto.class);
